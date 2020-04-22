@@ -4,27 +4,105 @@
 #include<map>
 #include<list>
 #include<Windows.h>
+#include<array>
+#include<conio.h>
 
 
 #define DEL std::cout<<"\n-------------------------------------------------------\n"
 void printFullMap(const std::map<std::string, std::list<std::string>>& map);
+void printOne(const std::map<std::string, std::list<std::string>>& map);
 void save(const std::map<std::string, std::list<std::string>>& map);
 std::map<std::string, std::list<std::string>> init();
 void load(std::map<std::string, std::list<std::string>>& map);
 void insert(std::map<std::string, std::list<std::string>>& map);
+
+void menu();
+void printMenu(std::array<bool, 5> optionActive);
 
 
 
 void main()
 {
 	setlocale(LC_ALL, "");
-	
-	std::map<std::string, std::list<std::string>> PoliceDB = init();
 
-	printFullMap(PoliceDB);
-	//save(PoliceDB);
-	insert(PoliceDB);
-	printFullMap(PoliceDB);
+	menu();
+}
+void menu()
+{
+	std::map<std::string, std::list<std::string>> PoliceDB = init();
+	std::array<bool, 5> optionActive = { true,false,false,false,false };
+	char key = 72;
+	while (key != 27) {
+		system("cls");
+		printMenu(optionActive);
+		key = _getch();
+		for (int i = 0; i < optionActive.size(); i++)
+		{
+			if ( (key==72||key==80) && optionActive[i]) {
+				optionActive[i] = false;
+				if (key == 72) { i == 0 ? optionActive[optionActive.size() - 1] = true : optionActive[i - 1] = true; }
+				else if (key == 80) { (i == optionActive.size() - 1) ? optionActive[0] = true : optionActive[i + 1] = true; }
+				i = optionActive.size();
+			}
+			if (key == 13) {
+				system("cls");
+				if (optionActive[0])	load(PoliceDB);
+				if (optionActive[1])	save(PoliceDB);
+				if (optionActive[2]) {
+					do {
+						insert(PoliceDB);
+						key = _getch();		system("cls");
+					} while (key != 27);
+					key = 0;
+				}
+				if (optionActive[3]) {
+					do {
+						printFullMap(PoliceDB);
+						key = _getch();		system("cls");
+					}
+					while (key != 27);
+					key = 0;
+				}
+				if (optionActive[4]) {
+					do {
+						printOne(PoliceDB);
+						key = _getch();		system("cls");
+					} while (key != 27);
+					key = 0;
+				}
+			}
+		}
+	};
+	
+	
+}
+void printMenu(std::array<bool, 5> optionActive)
+{
+	std::cout << "\n\n";
+	std::array<std::pair<std::string, std::string>,5> menuOptions = {
+		std::pair<std::string,std::string>
+		("\t\t>>>>>\tLOAD DB\t\t<<<<<\n","\t\t\tLOAD DB\n"),
+		std::pair<std::string,std::string>
+		("\t\t>>>>>\tSAVE DB\t\t<<<<<\n","\t\t\tSAVE DB\n"),
+		std::pair<std::string,std::string>
+		("\t\t>>>>>\tADD NEW\t\t<<<<<\n","\t\t\tADD NEW\n"),
+		std::pair<std::string,std::string>
+		("\t\t>>>>>\tPRINT FULL DB\t<<<<<\n","\t\t\tPRINT FULL DB\n"),
+		std::pair<std::string,std::string>
+		("\t\t>>>>>\tPRINT ONE\t<<<<<\n","\t\t\tPRINT ONE\n")
+	};
+	std::cout << "\n\t\t~~~ Traffic Police Database ~~~\n\n";
+	for (int i = 0;i<menuOptions.size();i++)
+	{
+		if (optionActive[i]) {
+			std::cout << menuOptions[i].first;
+		}
+		else
+		{
+			std::cout << menuOptions[i].second;
+		}
+	}
+	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Choose\n";
 }
 
 void printFullMap(const std::map<std::string, std::list<std::string>>& map)
@@ -48,6 +126,26 @@ void printFullMap(const std::map<std::string, std::list<std::string>>& map)
 		DEL;
 	}
 }
+
+void printOne(const std::map<std::string, std::list<std::string>>& map)
+{
+	std::cout << "Введите номер транспортного средства: ";
+	std::string license_plate; 
+	SetConsoleCP(1251);		std::getline(std::cin, license_plate);		SetConsoleCP(866);
+	std::cout << "\n\n";
+	for (std::pair<std::string, std::list<std::string>> m_it : map)
+	{
+		if (m_it.first == license_plate) {
+			std::cout << m_it.first << " :\n";
+			for (std::string l_it : m_it.second)
+			{
+				std::cout << "\t" << l_it<<"\n";
+			}
+		}
+	}
+
+}
+
 void save(const std::map<std::string, std::list<std::string>>& map)
 {
 	std::ofstream fout("TrafficPoliceDB.txt");
@@ -71,7 +169,7 @@ std::map<std::string, std::list<std::string>> init()
 	std::map<std::string, std::list<std::string>> PoliceDB =
 	{
 		std::pair<std::string,std::list<std::string>>
-		("BI 0000 BI",{"привышение скорости","вождение в нетрезвом состоянии"}),
+		("BI 0000 BI",{"превышение скорости","вождение в нетрезвом состоянии"}),
 
 		std::pair<std::string,std::list<std::string>>
 		("BI 0001 BI",{"езда по встречке"}),
