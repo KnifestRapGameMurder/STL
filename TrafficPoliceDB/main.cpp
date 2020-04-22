@@ -43,7 +43,7 @@ void main()
 
 void menu()
 {
-	std::map<std::string, std::list<std::string>> PoliceDB = init();
+	std::map<std::string, std::list<std::string>> PoliceDB;// = init();
 	std::array<bool, 5> optionActive = { true,false,false,false,false };
 	char key = 72;
 	while (key != 27) {
@@ -107,7 +107,7 @@ void printMenu(std::array<bool, 5> optionActive)
 
 void printFullMap(const std::map<std::string, std::list<std::string>>& map)
 {
-	/*for (std::map<std::string, std::list<std::string>>::iterator m_it = map.begin(); m_it != map.end(); m_it++)
+	/*for (std::map<std::string, std::list<std::string>>::const_iterator m_it = map.begin(); m_it != map.end(); m_it++)
 	{
 		std::cout << m_it->first<<" :\n";
 		for (auto l_it : m_it->second)
@@ -133,6 +133,7 @@ void printOne(const std::map<std::string, std::list<std::string>>& map)
 	std::string license_plate; 
 	SetConsoleCP(1251);		std::getline(std::cin, license_plate);		SetConsoleCP(866);
 	std::cout << "\n\n";
+	bool notFound = true;
 	for (std::pair<std::string, std::list<std::string>> m_it : map)
 	{
 		if (m_it.first == license_plate) {
@@ -140,13 +141,12 @@ void printOne(const std::map<std::string, std::list<std::string>>& map)
 			for (std::string l_it : m_it.second)
 			{
 				std::cout << "\t" << l_it<<"\n";
+				notFound = false;
+				break;
 			}
 		}
-		else {
-			std::cout << "Такого номера нету в базе";
-			break;
-		}
 	}
+	if(notFound)std::cout << "Такого номера нету в базе";
 
 }
 
@@ -190,6 +190,9 @@ std::map<std::string, std::list<std::string>> init()
 void load(std::map<std::string, std::list<std::string>>& map)
 {
 	map.clear();
+	printFullMap(map);
+	std::cout << "After clearing:\n\n";
+	system("pause");
 	std::string licensePlate;
 	std::string violation;
 	std::list<std::string> violationList;
@@ -201,15 +204,20 @@ void load(std::map<std::string, std::list<std::string>>& map)
 		while (!fin.eof())
 		{
 			std::getline(fin, licensePlate,':');
-			std::cout << licensePlate << " : ";
-			std::getline(fin, violation, ';');
+			if (licensePlate == "")break;
+			//std::cout << licensePlate << " : ";
+			std::getline(fin, violation, '\n');
 			//std::cout << licensePlate << "\t" << violation << std::endl;
 			boost::algorithm::split(violationList, violation, boost::is_any_of(","));
 			//for (auto x : violationList)	std::cout << x<<"\t";	std::cout << std::endl;
+			map.insert(
+				std::pair<std::string, std::list<std::string>>
+				(licensePlate, violationList)
+			);
 		}
 	}
 	else {
-		std::cerr << "Error: file id not found";
+		std::cerr << "Error: file is not found";
 	}
 }
 
