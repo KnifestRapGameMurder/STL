@@ -6,27 +6,41 @@
 #include<Windows.h>
 #include<array>
 #include<conio.h>
+#include<boost/algorithm/string.hpp>
 
 
 #define DEL std::cout<<"\n-------------------------------------------------------\n"
+
 void printFullMap(const std::map<std::string, std::list<std::string>>& map);
 void printOne(const std::map<std::string, std::list<std::string>>& map);
-void save(const std::map<std::string, std::list<std::string>>& map);
+
 std::map<std::string, std::list<std::string>> init();
-void load(std::map<std::string, std::list<std::string>>& map);
 void insert(std::map<std::string, std::list<std::string>>& map);
+
+void save(const std::map<std::string, std::list<std::string>>& map);
+void load(std::map<std::string, std::list<std::string>>& map);
 
 void menu();
 void printMenu(std::array<bool, 5> optionActive);
 
 
+//#define CHECKER
 
 void main()
 {
 	setlocale(LC_ALL, "");
 
+#ifdef CHECKER
+	std::map<std::string, std::list<std::string>> PoliceDB;// = init();
+	load(PoliceDB);
+	printFullMap(PoliceDB);
+#endif // CHECKER
+
 	menu();
 }
+
+
+
 void menu()
 {
 	std::map<std::string, std::list<std::string>> PoliceDB = init();
@@ -46,36 +60,22 @@ void menu()
 			}
 			if (key == 13) {
 				system("cls");
-				if (optionActive[0])	load(PoliceDB);
-				if (optionActive[1])	save(PoliceDB);
-				if (optionActive[2]) {
-					do {
-						insert(PoliceDB);
-						key = _getch();		system("cls");
-					} while (key != 27);
-					key = 0;
-				}
-				if (optionActive[3]) {
-					do {
-						printFullMap(PoliceDB);
-						key = _getch();		system("cls");
-					}
-					while (key != 27);
-					key = 0;
-				}
-				if (optionActive[4]) {
-					do {
-						printOne(PoliceDB);
-						key = _getch();		system("cls");
-					} while (key != 27);
-					key = 0;
-				}
+				do{
+					if (optionActive[0])	load(PoliceDB);
+					if (optionActive[1])	save(PoliceDB);
+					if (optionActive[2])	insert(PoliceDB);
+					if (optionActive[3])	printFullMap(PoliceDB);
+					if (optionActive[4])	printOne(PoliceDB);
+					key = _getch();		system("cls");
+				} while (key != 27);
+				key = 0;
 			}
 		}
 	};
 	
 	
 }
+
 void printMenu(std::array<bool, 5> optionActive)
 {
 	std::cout << "\n\n";
@@ -142,13 +142,17 @@ void printOne(const std::map<std::string, std::list<std::string>>& map)
 				std::cout << "\t" << l_it<<"\n";
 			}
 		}
+		else {
+			std::cout << "Такого номера нету в базе";
+			break;
+		}
 	}
 
 }
 
 void save(const std::map<std::string, std::list<std::string>>& map)
 {
-	std::ofstream fout("TrafficPoliceDB.txt");
+	std::ofstream fout("base.txt");
 	for (std::pair<std::string, std::list<std::string>> m_it : map)
 	{
 		fout << m_it.first << " : ";
@@ -161,7 +165,7 @@ void save(const std::map<std::string, std::list<std::string>>& map)
 
 	}
 	fout.close();
-	system("start notepad TrafficPoliceDB.txt");
+	system("start notepad base.txt");
 }
 
 std::map<std::string, std::list<std::string>> init()
@@ -186,17 +190,22 @@ std::map<std::string, std::list<std::string>> init()
 void load(std::map<std::string, std::list<std::string>>& map)
 {
 	map.clear();
-	std::string license_plate;
-	std::list<std::string> violation;
+	std::string licensePlate;
+	std::string violation;
+	std::list<std::string> violationList;
 
-	std::ifstream fin("TrafficPoliceDB.txt");
+	std::ifstream fin("base.txt");
 
 	if (fin.is_open())
 	{
 		while (!fin.eof())
 		{
-			std::getline(fin, license_plate,':');
-
+			std::getline(fin, licensePlate,':');
+			std::cout << licensePlate << " : ";
+			std::getline(fin, violation, ';');
+			//std::cout << licensePlate << "\t" << violation << std::endl;
+			boost::algorithm::split(violationList, violation, boost::is_any_of(","));
+			//for (auto x : violationList)	std::cout << x<<"\t";	std::cout << std::endl;
 		}
 	}
 	else {
