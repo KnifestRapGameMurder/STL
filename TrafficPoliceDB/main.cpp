@@ -11,6 +11,9 @@
 
 #define DEL std::cout<<"\n-------------------------------------------------------\n"
 
+#define LIC_PLATE_INP std::cout << "Введите номер транспортного средства: ";std::string licensePlate;SetConsoleCP(1251);		std::getline(std::cin, licensePlate);		SetConsoleCP(866);
+#define VIO_INP std::cout << "Введите правонарушение: ";std::string violation;SetConsoleCP(1251);		std::getline(std::cin, violation);			SetConsoleCP(866);
+
 void printFullMap(const std::map<std::string, std::list<std::string>>& map);
 void printOne(const std::map<std::string, std::list<std::string>>& map);
 
@@ -150,9 +153,7 @@ void printFullMap(const std::map<std::string, std::list<std::string>>& map)
 
 void printOne(const std::map<std::string, std::list<std::string>>& map)
 {
-	std::cout << "Введите номер транспортного средства: ";
-	std::string licensePlate; 
-	SetConsoleCP(1251);		std::getline(std::cin, licensePlate);		SetConsoleCP(866);
+	LIC_PLATE_INP
 	std::cout << "\n\n";
 	bool notFound = true;
 	for (std::pair<std::string, std::list<std::string>> m_it : map)
@@ -252,17 +253,12 @@ void load(std::map<std::string, std::list<std::string>>& map)
 	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Reload\n";
 }
 
-void insert(std::map<std::string, std::list<std::string>>& map)
+void insert(std::map<std::string, std::list<std::string>>& map)	//add new
 {
-	std::string licensePlate;
-	std::string violation;
-
-	std::cout << "Введите номер автомобиля: ";
-	SetConsoleCP(1251);		std::getline(std::cin,licensePlate);		SetConsoleCP(866);
+	LIC_PLATE_INP
 	if (licensePlate.size() < 6) { std::cout << "\n\nВы не указали номер автомобиля."; }
 	else {
-		std::cout << "Введите правонарушение: ";
-		SetConsoleCP(1251);		std::getline(std::cin, violation);			SetConsoleCP(866);
+		VIO_INP
 		if (violation.size() < 10) { std::cout << "\n\nВы не указали правонарушение."; }
 		else {
 			std::map<std::string, std::list<std::string>>::iterator offender = map.find(licensePlate);
@@ -274,23 +270,24 @@ void insert(std::map<std::string, std::list<std::string>>& map)
 			else
 			{
 				map.insert(std::pair<std::string, std::list<std::string>>(licensePlate, { violation }));
+				std::cout << "\n\nДобавлен новый номер транспортного средства";
 			}
+			std::cout << "\n\nПравонарушение по указаному номеру успешно добавлено.";
 		}
 	}
 	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Add new\n";
 }
 
-void removePair(std::map<std::string, std::list<std::string>>& map)
+void removePair(std::map<std::string, std::list<std::string>>& map)		//erase
 {
-	std::cout << "Укажите удаляемый номер автомобиля: ";
-	std::string licensePlate;
-	SetConsoleCP(1251);		std::getline(std::cin, licensePlate);		SetConsoleCP(866);
+	LIC_PLATE_INP
 	if (licensePlate.size() < 6) { std::cout << "\n\nВы не указали номер автомобиля."; }
 	else {
 		bool notFound = true;
 		for (std::pair<std::string, std::list<std::string>> m_it : map)	if (m_it.first == licensePlate)	notFound = false;
 		if (notFound)std::cout << "\n\nТакого номера нету в базе!";
 		map.erase(licensePlate);
+		std::cout << "\n\nНомер успешно удален из базы данных.";
 	}
 	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Erase\n";
 
@@ -298,14 +295,10 @@ void removePair(std::map<std::string, std::list<std::string>>& map)
 
 void removeViol(std::map<std::string, std::list<std::string>>& map)
 {
-	std::cout << "Укажите номер автомобиля: ";
-	std::string licensePlate;
-	SetConsoleCP(1251);		std::getline(std::cin, licensePlate);		SetConsoleCP(866);
+	LIC_PLATE_INP
 	if (licensePlate.size() < 6) { std::cout << "\n\nВы не указали номер автомобиля."; }
 	else {
-		std::cout << "Укажите удаляемое правонарушение: ";
-		std::string violation;
-		SetConsoleCP(1251);		std::getline(std::cin, violation);			SetConsoleCP(866);
+		VIO_INP
 		if (violation.size() < 10) { std::cout << "\n\nВы не указали правонарушение.";}
 		else {
 			bool notFoundLic = true;
@@ -323,6 +316,7 @@ void removeViol(std::map<std::string, std::list<std::string>>& map)
 			if (notFoundViol)std::cout << "\n\nЭто правонарушение не пренадлежит даному номеру автомобиля!\n\n";
 
 			map[licensePlate].remove(violation);
+			std::cout << "\n\nПравонарушение успешно удалено.";
 		}
 	}
 	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Remove violation\n";
