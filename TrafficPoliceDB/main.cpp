@@ -17,11 +17,14 @@ void printOne(const std::map<std::string, std::list<std::string>>& map);
 std::map<std::string, std::list<std::string>> init();
 void insert(std::map<std::string, std::list<std::string>>& map);
 
+void removePair(std::map<std::string, std::list<std::string>>& map);
+void removeViol(std::map<std::string, std::list<std::string>>& map);
+
 void save(const std::map<std::string, std::list<std::string>>& map);
 void load(std::map<std::string, std::list<std::string>>& map);
 
 void menu();
-void printMenu(std::array<bool, 5> optionActive);
+void printMenu(std::array<bool, 7> optionActive);
 
 
 //#define CHECKER
@@ -43,8 +46,8 @@ void main()
 
 void menu()
 {
-	std::map<std::string, std::list<std::string>> PoliceDB;// = init();
-	std::array<bool, 5> optionActive = { true,false,false,false,false };
+	std::map<std::string, std::list<std::string>> PoliceDB = init();
+	std::array<bool, 7> optionActive = { true,false,false,false,false,false,false };
 	char key = 72;
 	while (key != 27) {
 		system("cls");
@@ -66,20 +69,20 @@ void menu()
 					if (optionActive[2])	insert(PoliceDB);
 					if (optionActive[3])	printFullMap(PoliceDB);
 					if (optionActive[4])	printOne(PoliceDB);
+					if (optionActive[5])	removePair(PoliceDB);
+					if (optionActive[6])	removeViol(PoliceDB);
 					key = _getch();		system("cls");
 				} while (key != 27);
 				key = 0;
 			}
 		}
 	};
-	
-	
 }
 
-void printMenu(std::array<bool, 5> optionActive)
+void printMenu(std::array<bool, 7> optionActive)
 {
 	std::cout << "\n\n";
-	std::array<std::pair<std::string, std::string>,5> menuOptions = {
+	std::array<std::pair<std::string, std::string>,7> menuOptions = {
 		std::pair<std::string,std::string>
 		("\t\t>>>>>\tLOAD DB\t\t<<<<<\n","\t\t\tLOAD DB\n"),
 		std::pair<std::string,std::string>
@@ -89,7 +92,11 @@ void printMenu(std::array<bool, 5> optionActive)
 		std::pair<std::string,std::string>
 		("\t\t>>>>>\tPRINT FULL DB\t<<<<<\n","\t\t\tPRINT FULL DB\n"),
 		std::pair<std::string,std::string>
-		("\t\t>>>>>\tPRINT ONE\t<<<<<\n","\t\t\tPRINT ONE\n")
+		("\t\t>>>>>\tPRINT ONE\t<<<<<\n","\t\t\tPRINT ONE\n"),
+		std::pair<std::string,std::string>
+		("\t\t>>>>>\tERASE\t\t<<<<<\n","\t\t\tERASE\n"),
+		std::pair<std::string,std::string>
+		("\t\t>>>>>\tREMOVE VIOL\t<<<<<\n","\t\t\tREMOVE VIOL\n")
 	};
 	std::cout << "\n\t\t~~~ Traffic Police Database ~~~\n\n";
 	for (int i = 0;i<menuOptions.size();i++)
@@ -116,36 +123,51 @@ void printFullMap(const std::map<std::string, std::list<std::string>>& map)
 		}
 		DEL;
 	}*/
+	int emptyCount = 0;
+	for (std::pair<std::string, std::list<std::string>> m_it : map) {
+		if (m_it.second.empty())emptyCount++;
+	}
+	std::cout << "list size: " << map.size()<<" | empty: " << emptyCount << " | max size: " << map.max_size()
+		<< "\n_________________________________________________________________________\n";
 	for (std::pair<std::string, std::list<std::string>> m_it : map)
 	{
-		std::cout << m_it.first << " :\n";
-		for (std::string l_it : m_it.second)
-		{
-			std::cout << l_it << "\t";
+		std::cout << m_it.first << " : ";
+		if (m_it.second.empty())std::cout << "\t\t\t\t\t...empty...";
+		else {
+			
+			for (std::list<std::string>::iterator l_it = m_it.second.begin(); l_it != m_it.second.end(); l_it)
+			{
+				std::cout << "\n\t" << *l_it;
+				l_it++;
+				if (l_it != m_it.second.end())std::cout << ",";
+			}std::cout << ";";
 		}
 		DEL;
 	}
+	std::cout << "\n\n\t[Esc] Exit\n";
+	
 }
 
 void printOne(const std::map<std::string, std::list<std::string>>& map)
 {
 	std::cout << "Введите номер транспортного средства: ";
-	std::string license_plate; 
-	SetConsoleCP(1251);		std::getline(std::cin, license_plate);		SetConsoleCP(866);
+	std::string licensePlate; 
+	SetConsoleCP(1251);		std::getline(std::cin, licensePlate);		SetConsoleCP(866);
 	std::cout << "\n\n";
 	bool notFound = true;
 	for (std::pair<std::string, std::list<std::string>> m_it : map)
 	{
-		if (m_it.first == license_plate) {
+		if (m_it.first == licensePlate) {
 			std::cout << m_it.first << " :\n";
 			for (std::string l_it : m_it.second)
 			{
 				std::cout << "\t" << l_it<<"\n";
 				notFound = false;
-				break;
 			}
+			break;
 		}
 	}
+	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Search\n";
 	if(notFound)std::cout << "Такого номера нету в базе";
 
 }
@@ -155,7 +177,7 @@ void save(const std::map<std::string, std::list<std::string>>& map)
 	std::ofstream fout("base.txt");
 	for (std::pair<std::string, std::list<std::string>> m_it : map)
 	{
-		fout << m_it.first << " : ";
+		fout << m_it.first << ":";
 		for (std::string l_it : m_it.second)
 		{
 			fout << l_it << ",";
@@ -165,6 +187,8 @@ void save(const std::map<std::string, std::list<std::string>>& map)
 
 	}
 	fout.close();
+	std::cout << "Database saves in file \"base.txt\" in project folder\n\n";
+	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Resave\n";
 	system("start notepad base.txt");
 }
 
@@ -173,26 +197,27 @@ std::map<std::string, std::list<std::string>> init()
 	std::map<std::string, std::list<std::string>> PoliceDB =
 	{
 		std::pair<std::string,std::list<std::string>>
-		("BI 0000 BI",{"превышение скорости","вождение в нетрезвом состоянии"}),
+		("BI0000BI",{"превышение скорости","вождение в нетрезвом состоянии"}),
 
 		std::pair<std::string,std::list<std::string>>
-		("BI 0001 BI",{"езда по встречке"}),
+		("BI0001BI",{"езда по встречке"}),
 
 		std::pair<std::string,std::list<std::string>>
-		("BI 0002 BI",{"парковка в неположеном месте"}),
+		("BI0002BI",{"парковка в неположеном месте"}),
 
 		std::pair<std::string,std::list<std::string>>
-		("BI 0003 BI",{"проезд на красный","плюнул в полицейского"})
+		("BI0003BI",{"проезд на красный","плюнул в полицейского"})
 	};
+
+	
+
 	return PoliceDB;
 }
 
 void load(std::map<std::string, std::list<std::string>>& map)
 {
 	map.clear();
-	printFullMap(map);
-	std::cout << "After clearing:\n\n";
-	system("pause");
+	std::cout << "Database is cleaned.\n\n";
 	std::string licensePlate;
 	std::string violation;
 	std::list<std::string> violationList;
@@ -201,12 +226,15 @@ void load(std::map<std::string, std::list<std::string>>& map)
 
 	if (fin.is_open())
 	{
+		bool firstLine = false;
 		while (!fin.eof())
 		{
+			if(firstLine)std::getline(fin, licensePlate,'\n');
+			firstLine = true;
 			std::getline(fin, licensePlate,':');
 			if (licensePlate == "")break;
 			//std::cout << licensePlate << " : ";
-			std::getline(fin, violation, '\n');
+			std::getline(fin, violation, ';');
 			//std::cout << licensePlate << "\t" << violation << std::endl;
 			boost::algorithm::split(violationList, violation, boost::is_any_of(","));
 			//for (auto x : violationList)	std::cout << x<<"\t";	std::cout << std::endl;
@@ -214,32 +242,91 @@ void load(std::map<std::string, std::list<std::string>>& map)
 				std::pair<std::string, std::list<std::string>>
 				(licensePlate, violationList)
 			);
+			if (violation.size() == 0)map[licensePlate].clear();
 		}
+		std::cout << "Database is loaded.\n\n";
 	}
 	else {
 		std::cerr << "Error: file is not found";
 	}
+	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Reload\n";
 }
 
 void insert(std::map<std::string, std::list<std::string>>& map)
 {
-	std::string license_plate;
+	std::string licensePlate;
 	std::string violation;
 
 	std::cout << "Введите номер автомобиля: ";
-	SetConsoleCP(1251);		std::getline(std::cin,license_plate);		SetConsoleCP(866);
+	SetConsoleCP(1251);		std::getline(std::cin,licensePlate);		SetConsoleCP(866);
+	if (licensePlate.size() < 6) { std::cout << "\n\nВы не указали номер автомобиля."; }
+	else {
+		std::cout << "Введите правонарушение: ";
+		SetConsoleCP(1251);		std::getline(std::cin, violation);			SetConsoleCP(866);
+		if (violation.size() < 10) { std::cout << "\n\nВы не указали правонарушение."; }
+		else {
+			std::map<std::string, std::list<std::string>>::iterator offender = map.find(licensePlate);
 
-	std::cout << "Введите правонарушение: ";
-	SetConsoleCP(1251);		std::getline(std::cin, violation);			SetConsoleCP(866);
-
-	std::map<std::string, std::list<std::string>>::iterator offender =  map.find(license_plate);
-
-	if (offender != map.end())
-	{
-		offender->second.push_back(violation);
+			if (offender != map.end())
+			{
+				offender->second.push_back(violation);
+			}
+			else
+			{
+				map.insert(std::pair<std::string, std::list<std::string>>(licensePlate, { violation }));
+			}
+		}
 	}
-	else
-	{
-		map.insert(std::pair<std::string, std::list<std::string>>(license_plate, { violation }));
-	}
+	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Add new\n";
 }
+
+void removePair(std::map<std::string, std::list<std::string>>& map)
+{
+	std::cout << "Укажите удаляемый номер автомобиля: ";
+	std::string licensePlate;
+	SetConsoleCP(1251);		std::getline(std::cin, licensePlate);		SetConsoleCP(866);
+	if (licensePlate.size() < 6) { std::cout << "\n\nВы не указали номер автомобиля."; }
+	else {
+		bool notFound = true;
+		for (std::pair<std::string, std::list<std::string>> m_it : map)	if (m_it.first == licensePlate)	notFound = false;
+		if (notFound)std::cout << "\n\nТакого номера нету в базе!";
+		map.erase(licensePlate);
+	}
+	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Erase\n";
+
+}
+
+void removeViol(std::map<std::string, std::list<std::string>>& map)
+{
+	std::cout << "Укажите номер автомобиля: ";
+	std::string licensePlate;
+	SetConsoleCP(1251);		std::getline(std::cin, licensePlate);		SetConsoleCP(866);
+	if (licensePlate.size() < 6) { std::cout << "\n\nВы не указали номер автомобиля."; }
+	else {
+		std::cout << "Укажите удаляемое правонарушение: ";
+		std::string violation;
+		SetConsoleCP(1251);		std::getline(std::cin, violation);			SetConsoleCP(866);
+		if (violation.size() < 10) { std::cout << "\n\nВы не указали правонарушение.";}
+		else {
+			bool notFoundLic = true;
+			bool notFoundViol = true;
+			for (std::pair<std::string, std::list<std::string>> m_it : map) {
+				if (m_it.first == licensePlate) {
+					notFoundLic = false;
+
+					for (std::string l_it : m_it.second) {
+						if (l_it == violation)notFoundViol = false;
+					}
+				}
+			}
+			if (notFoundLic)std::cout << "\n\nТакого номера нету в базе!";
+			if (notFoundViol)std::cout << "\n\nЭто правонарушение не пренадлежит даному номеру автомобиля!\n\n";
+
+			map[licensePlate].remove(violation);
+		}
+	}
+	std::cout << "\n\n\t[Esc] Exit\t\t\t[Enter] Remove violation\n";
+}
+
+/*PoliceDB["BI 0001 BI"].remove("езда по встречке");
+	PoliceDB.erase("BI 0000 BI");*/
